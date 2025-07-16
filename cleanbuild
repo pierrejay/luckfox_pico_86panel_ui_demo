@@ -1,0 +1,83 @@
+#!/bin/bash
+
+echo "=== Build Luckfox Panel 86 - Thermostat Application ==="
+
+# Check SDK path
+if [ -z "$LUCKFOX_SDK_PATH" ]; then
+    echo "ERROR: LUCKFOX_SDK_PATH is not defined"
+    echo "Use: export LUCKFOX_SDK_PATH=~/luckfox-pico"
+    exit 1
+fi
+
+if [ ! -d "$LUCKFOX_SDK_PATH" ]; then
+    echo "ERROR: LUCKFOX_SDK_PATH points to unknown directory: $LUCKFOX_SDK_PATH"
+    exit 1
+fi
+
+echo "✓ SDK path: $LUCKFOX_SDK_PATH"
+
+# Check toolchain
+TOOLCHAIN="$LUCKFOX_SDK_PATH/tools/linux/toolchain/arm-rockchip830-linux-uclibcgnueabihf/bin/arm-rockchip830-linux-uclibcgnueabihf-gcc"
+if [ ! -f "$TOOLCHAIN" ]; then
+    echo "ERREUR: Toolchain not found: $TOOLCHAIN"
+    exit 1
+fi
+
+echo "✓ Toolchain found"
+
+# 0. Build libmodbus (optional)
+if [ "$1" = "--with-libmodbus" ]; then
+    echo ""
+    echo "=== 0/3 Build libmodbus (optional) ==="
+    if [ ! -f "libmodbus_arm/lib/libmodbus.a" ]; then
+        echo "libmodbus not found, compilation..."
+        make -f Makefile_libmodbus
+        if [ $? -ne 0 ]; then
+            echo "ERROR: Failed to compile libmodbus"
+            exit 1
+        fi
+    else
+        echo "✓ libmodbus already compiled"
+    fi
+fi
+
+# 1. Build all with CMake
+echo ""
+echo "=== 1/2 Build CMake (Thermostat Application) ==="
+rm -f CMakeCache.txt
+rm -rf build
+mkdir build
+cd build
+
+echo "CMake configuration..."
+cmake ..
+if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to configure CMake"
+    exit 1
+fi
+
+echo "Compilation..."
+make -j$(nproc)
+if [ $? -ne 0 ]; then
+    echo "ERROR: Failed to compile"
+    exit 1
+fi
+
+echo "✓ All binaries compiled with CMake"
+cd ..
+
+# 2. Summary
+echo ""
+echo "=== ✅ BUILD FINISHED ==="
+echo "Binary created in build/:"
+ls -la build/thermostat_demo 2>/dev/null || echo "  thermostat_demo missing"
+
+echo ""
+echo "Next steps:"
+echo "  1. Deploy:   scp build/thermostat_demo root@192.168.0.170:/tmp/"
+echo "  2. Optional: ./cleanbuild --with-libmodbus (to compile libmodbus)"
+echo "  3. Test:     ssh root@192.168.0.170"
+echo "               chmod +x /tmp/thermostat_demo"
+echo "               /tmp/thermostat_demo"
+echo ""
+echo "Thermostat app with LVGL UI + Modbus RTU temp & humidity sensor"
