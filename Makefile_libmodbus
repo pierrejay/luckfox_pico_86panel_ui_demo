@@ -1,0 +1,99 @@
+# Makefile pour libmodbus cross-compilation
+# Usage: make -f Makefile_libmodbus
+
+# Vérifier que LUCKFOX_SDK_PATH est défini
+ifndef LUCKFOX_SDK_PATH
+$(error LUCKFOX_SDK_PATH not set. Export it first: export LUCKFOX_SDK_PATH=~/luckfox-pico)
+endif
+
+# Toolchain
+TOOLCHAIN_PATH = $(LUCKFOX_SDK_PATH)/tools/linux/toolchain/arm-rockchip830-linux-uclibcgnueabihf
+CC = $(TOOLCHAIN_PATH)/bin/arm-rockchip830-linux-uclibcgnueabihf-gcc
+CXX = $(TOOLCHAIN_PATH)/bin/arm-rockchip830-linux-uclibcgnueabihf-g++
+AR = $(TOOLCHAIN_PATH)/bin/arm-rockchip830-linux-uclibcgnueabihf-ar
+STRIP = $(TOOLCHAIN_PATH)/bin/arm-rockchip830-linux-uclibcgnueabihf-strip
+RANLIB = $(TOOLCHAIN_PATH)/bin/arm-rockchip830-linux-uclibcgnueabihf-ranlib
+
+# Dossiers
+LIBMODBUS_DIR = lib/libmodbus
+LIBMODBUS_BUILD = $(LIBMODBUS_DIR)/build
+LIBMODBUS_INSTALL = lib/libmodbus_arm
+
+.PHONY: all clean clone configure build install help
+
+all: install
+
+# Cloner libmodbus
+clone:
+	@echo "=== Clone libmodbus ==="
+	@if [ ! -d "$(LIBMODBUS_DIR)" ]; then \
+		git clone https://github.com/stephane/libmodbus.git $(LIBMODBUS_DIR); \
+		echo "✓ libmodbus clone"; \
+	else \
+		echo "✓ libmodbus deja present"; \
+	fi
+
+# Configurer
+configure: clone
+	@echo "=== Configure libmodbus ==="
+	cd $(LIBMODBUS_DIR) && \
+	autoreconf -fiv && \
+	./configure \
+		--host=arm-rockchip830-linux-uclibcgnueabihf \
+		--prefix=$(PWD)/$(LIBMODBUS_INSTALL) \
+		--enable-static \
+		--disable-shared \
+		--disable-tests \
+		CC="$(CC)" \
+		CXX="$(CXX)" \
+		AR="$(AR)" \
+		STRIP="$(STRIP)" \
+		RANLIB="$(RANLIB)" \
+		CFLAGS="-O2 -static" \
+		LDFLAGS="-static"
+	@echo "✓ Configure termine"
+
+# Compiler
+build: configure
+	@echo "=== Build libmodbus ==="
+	cd $(LIBMODBUS_DIR) && make -j$(shell nproc)
+	@echo "✓ Build termine"
+
+# Installer
+install: build
+	@echo "=== Install libmodbus ==="
+	cd $(LIBMODBUS_DIR) && make install
+	@echo "✓ Install termine"
+	@echo ""
+	@echo "libmodbus installe dans:"
+	@echo "  Headers: $(LIBMODBUS_INSTALL)/include/"
+	@echo "  Library: $(LIBMODBUS_INSTALL)/lib/libmodbus.a"
+
+# Nettoyer
+clean:
+	@echo "=== Clean libmodbus ==="
+	@if [ -d "$(LIBMODBUS_DIR)" ]; then \
+		cd $(LIBMODBUS_DIR) && make clean; \
+		echo "✓ Build clean"; \
+	fi
+
+# Nettoyer complètement
+distclean:
+	@echo "=== Distclean libmodbus ==="
+	rm -rf $(LIBMODBUS_DIR) $(LIBMODBUS_INSTALL)
+	@echo "✓ Tout supprime"
+
+help:
+	@echo "Makefile libmodbus cross-compilation"
+	@echo ""
+	@echo "Targets:"
+	@echo "  all       - Clone + configure + build + install"
+	@echo "  clone     - Clone libmodbus depuis GitHub"
+	@echo "  configure - Configure pour cross-compilation"
+	@echo "  build     - Compiler libmodbus"
+	@echo "  install   - Installer dans lib/libmodbus_arm/"
+	@echo "  clean     - Nettoyer build"
+	@echo "  distclean - Supprimer tout"
+	@echo ""
+	@echo "Exemple:"
+	@echo "  make -f Makefile_libmodbus"

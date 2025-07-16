@@ -1,74 +1,77 @@
+/*@file main.c
+ * @brief Original Luckfox 86 Panel demo main file  
+ * @brief Adapted to "ping_demo" example using EEZ UI framework
+ * @note This file is just here for reference, it's not used in the project!
+ * @note Shows how to integrate EEZ Studio UI with basic C application
+ */
+
 #include "lvgl/lvgl.h"
-// #include "lv_demos/lv_demo.h"
 #include "lv_drivers/display/fbdev.h"
 #include "lv_drivers/indev/evdev.h"
 #include <unistd.h>
 #include <pthread.h>
 #include <time.h>
 #include <sys/time.h>
-#include "source/86panel_demo/ui_custom.h"
+
+// Select which demo to use:
+// #define 86PANEL_DEMO
+
+#ifdef 86PANEL_DEMO
+    #include "source/86panel_demo/ui_custom.h"   // Original Luckfox 86 Panel demo
+#else // use Ping demo
+    #include "source/ping_demo/eez_ui/ui.h"      // "Ping demo" using EEZ Studio UI framework
+#endif
 
 #define DISP_BUF_SIZE  (720*720)
 
 int main(void)
 {
-    /*LittlevGL init*/
+    // Initialize LittlevGL
     lv_init();
 
-    /*Linux frame buffer device init*/
+    // Initialize Linux frame buffer device
     fbdev_init();
 
-    /*A small buffer for LittlevGL to draw the screen's content*/
+    // A small buffer for LittlevGL to draw the screen's content
     static lv_color_t buf[DISP_BUF_SIZE];
 
-    /*Initialize a descriptor for the buffer*/
+    // Initialize a descriptor for the buffer
     static lv_disp_draw_buf_t disp_buf;
     lv_disp_draw_buf_init(&disp_buf, buf, NULL, DISP_BUF_SIZE);
 
-    /*Initialize and register a display driver*/
+    // Initialize and register a display driver
     static lv_disp_drv_t disp_drv;
     lv_disp_drv_init(&disp_drv);
     disp_drv.draw_buf   = &disp_buf;
     disp_drv.flush_cb   = fbdev_flush;
     disp_drv.hor_res    = 720;
     disp_drv.ver_res    = 720;
-    // disp_drv.full_refresh = 1;
     lv_disp_drv_register(&disp_drv);
 
     evdev_init();
     static lv_indev_drv_t indev_drv_1;
-    lv_indev_drv_init(&indev_drv_1); /*Basic initialization*/
+    lv_indev_drv_init(&indev_drv_1);
     indev_drv_1.type = LV_INDEV_TYPE_POINTER;
-
-    /*This function will be called periodically (by the library) to get the mouse position and state*/
     indev_drv_1.read_cb = evdev_read;
     lv_indev_t *mouse_indev = lv_indev_drv_register(&indev_drv_1);
 
-    /*Set a cursor for the mouse*/
-    // LV_IMG_DECLARE(mouse_cursor_icon)
-    // lv_obj_t * cursor_obj = lv_img_create(lv_scr_act()); /*Create an image object for the cursor */
-    // lv_img_set_src(cursor_obj, &mouse_cursor_icon);           /*Set the image source*/
-    // lv_indev_set_cursor(mouse_indev, cursor_obj);             /*Connect the image  object to the driver*/
+    ui_init();  // Same init for both demos
 
-    /*Create a Demo*/
-    // lv_demo_widgets();
-    // button_demo_init();
-    // slider_demo_init();
-    // switch_demo_init();
-    ui_init();
-
-    /*Handle LitlevGL tasks (tickless mode)*/
+    // Handle LitlevGL tasks (tickless mode)
     while(1) {
         lv_timer_handler();
+        ui_tick();  // EEZ UI tick
         usleep(5000);
     }
 
-    main_timer_release();
+    #ifdef 86PANEL_DEMO
+    main_timer_release();  // Specific to 86panel original demo
+    #endif
 
     return 0;
 }
 
-/*Set in lv_conf.h as `LV_TICK_CUSTOM_SYS_TIME_EXPR`*/
+// Set in lv_conf.h as `LV_TICK_CUSTOM_SYS_TIME_EXPR`
 uint32_t custom_tick_get(void)
 {
     static uint64_t start_ms = 0;
