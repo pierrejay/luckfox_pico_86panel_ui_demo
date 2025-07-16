@@ -650,45 +650,16 @@ The Luckfox SDK provides a complete cross-compilation toolchain specifically tun
 - **Build consistency:** Same toolchain used for official Luckfox firmware builds
 
 #### CMakeLists.txt Configuration
-```cmake
-cmake_minimum_required(VERSION 3.10)
-project(thermostat_demo)
 
-# C++17 standard
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+**Building on Luckfox Template:** The CMakeLists.txt extends the original Luckfox Panel 86 template with our thermostat application components.
 
-# Luckfox toolchain
-set(CMAKE_SYSTEM_NAME Linux)
-set(CMAKE_SYSTEM_PROCESSOR arm)
+**Key Additions to Base Template:**
+- **C++17 Support:** Added C++ standard configuration for our application classes
+- **libmodbus Integration:** Links pre-compiled ARM libmodbus library for sensor communication
+- **Source Organization:** Compiles our C++ classes from `source/thermostat_app/` and EEZ UI from `source/thermostat_ui/`
+- **Threading Support:** Links pthread library for multi-threaded operation
 
-# Compiler paths
-set(TOOLCHAIN_PATH "$ENV{LUCKFOX_SDK_PATH}/tools/linux/toolchain/arm-rockchip830-linux-uclibcgnueabihf")
-set(CMAKE_C_COMPILER "${TOOLCHAIN_PATH}/bin/arm-rockchip830-linux-uclibcgnueabihf-gcc")
-set(CMAKE_CXX_COMPILER "${TOOLCHAIN_PATH}/bin/arm-rockchip830-linux-uclibcgnueabihf-g++")
-
-# Dependencies
-find_library(MODBUS_LIB modbus PATHS ${CMAKE_SOURCE_DIR}/lib/libmodbus_arm/lib REQUIRED)
-find_package(Threads REQUIRED)
-
-# Executable
-add_executable(thermostat_demo
-    main.cpp
-    source/thermostat_app/Thermostat.cpp
-    source/thermostat_app/thermostat_bridge.cpp
-    source/thermostat_ui/thermostat_handler.c
-    source/thermostat_ui/ui/vars.c
-    source/thermostat_ui/ui/screens.c
-    # ... other UI files
-)
-
-# Link libraries
-target_link_libraries(thermostat_demo 
-    ${MODBUS_LIB}
-    Threads::Threads
-    # ... LVGL libraries
-)
-```
+The build system automatically discovers our source files and combines them with the existing LVGL framework to create the final `thermostat_demo` executable.
 
 ### Build Process
 

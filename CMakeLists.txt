@@ -45,15 +45,15 @@ add_subdirectory(${CMAKE_SOURCE_DIR}/lv_drivers EXCLUDE_FROM_ALL)
 # libmodbus est requis (plus de simulation)
 set(LIBMODBUS_DIR "${CMAKE_SOURCE_DIR}/lib/libmodbus_arm")
 if(NOT EXISTS "${LIBMODBUS_DIR}/lib/libmodbus.a")
-    message(FATAL_ERROR "libmodbus requis! Placez lib/libmodbus_arm/ dans le répertoire racine")
+    message(FATAL_ERROR "libmodbus required! Place lib/libmodbus_arm/ in the root directory")
 endif()
-message(STATUS "libmodbus trouvé: ${LIBMODBUS_DIR}")
+message(STATUS "libmodbus found: ${LIBMODBUS_DIR}")
 
 #======================================
 # THERMOSTAT APPLICATION (LVGL + EEZ + Modbus)
 #======================================
 
-# Sources thermostat (C++ main + C++ class + C bridge + C UI)
+# Thermostat source files (C++ main + C++ class + C bridge + C UI)
 file(GLOB THERMOSTAT_MAIN "${CMAKE_SOURCE_DIR}/main.cpp")
 file(GLOB THERMOSTAT_CPP_SRCS 
     "${CMAKE_SOURCE_DIR}/source/thermostat_app/*.cpp")
@@ -69,10 +69,10 @@ target_link_libraries(thermostat_demo
     m
 )
 
-# Ajouter libmodbus au thermostat (toujours)
+# Add libmodbus to thermostat (always)
 target_include_directories(thermostat_demo PRIVATE ${LIBMODBUS_DIR}/include)
 target_link_libraries(thermostat_demo PRIVATE ${LIBMODBUS_DIR}/lib/libmodbus.a)
-message(STATUS "Thermostat: avec libmodbus")
+message(STATUS "Thermostat: with libmodbus")
 
 
 #======================================
