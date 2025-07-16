@@ -8,9 +8,14 @@ endif()
 set(CMAKE_C_COMPILER "${SDK_PATH}/tools/linux/toolchain/arm-rockchip830-linux-uclibcgnueabihf/bin/arm-rockchip830-linux-uclibcgnueabihf-gcc")
 set(CMAKE_CXX_COMPILER "${SDK_PATH}/tools/linux/toolchain/arm-rockchip830-linux-uclibcgnueabihf/bin/arm-rockchip830-linux-uclibcgnueabihf-g++")
 
-project(86UI_demo C)
+# Projet principal
+project(luckfox_panel86 C CXX)
 
-set(CMAKE_C_FLAGS "-O3 -g0 -Wall -Wshadow -Wundef -Wmissing-prototypes \
+# C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CMAKE_C_FLAGS "-O3 -g0 -Wall -Wno-shadow -Wundef -Wmissing-prototypes \
     -Wno-discarded-qualifiers -Wextra -Wno-unused-function \
     -Wno-error=strict-prototypes -Wpointer-arith -fno-strict-aliasing \
     -Wno-error=cpp -Wuninitialized -Wmaybe-uninitialized \
@@ -18,32 +23,61 @@ set(CMAKE_C_FLAGS "-O3 -g0 -Wall -Wshadow -Wundef -Wmissing-prototypes \
     -Wsizeof-pointer-memaccess -Wno-format-nonliteral -Wno-cast-qual \
     -Wunreachable-code -Wno-switch-default -Wreturn-type -Wmultichar \
     -Wformat-security -Wno-ignored-qualifiers -Wno-sign-compare \
-    -Wno-missing-prototypes -Wdouble-promotion -Wclobbered \
+    -Wno-missing-prototypes -Wno-double-promotion -Wclobbered \
     -Wdeprecated -Wempty-body -Wshift-negative-value -Wstack-usage=2048 \
     -Wno-unused-value -Wno-format-overflow")
+
+set(CMAKE_CXX_FLAGS "-O3 -g0 -Wall -Wextra -Wno-unused-parameter -Wno-sign-compare \
+    -Wno-unused-value -fno-strict-aliasing")
+
 add_compile_options(-Wno-unused)
 
 include_directories( 
     ${CMAKE_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/source
+    ${CMAKE_SOURCE_DIR}/source/thermostat_app
 )
 
 # lvgl
 add_subdirectory(${CMAKE_SOURCE_DIR}/lvgl EXCLUDE_FROM_ALL)
 add_subdirectory(${CMAKE_SOURCE_DIR}/lv_drivers EXCLUDE_FROM_ALL)
 
-file(GLOB MAINSRC "${CMAKE_SOURCE_DIR}/*.c")
-file(GLOB_RECURSE CSRCS "${CMAKE_SOURCE_DIR}/source/86panel_demo/*.c" 
-                        "${CMAKE_SOURCE_DIR}/source/86panel_demo/fonts/*.c" 
-                        "${CMAKE_SOURCE_DIR}/source/86panel_demo/images/*.c" 
-                        "${CMAKE_SOURCE_DIR}/source/86panel_demo/screens/*.c")
+# libmodbus est requis (plus de simulation)
+set(LIBMODBUS_DIR "${CMAKE_SOURCE_DIR}/lib/libmodbus_arm")
+if(NOT EXISTS "${LIBMODBUS_DIR}/lib/libmodbus.a")
+    message(FATAL_ERROR "libmodbus requis! Placez lib/libmodbus_arm/ dans le répertoire racine")
+endif()
+message(STATUS "libmodbus trouvé: ${LIBMODBUS_DIR}")
 
-add_executable(${PROJECT_NAME} ${MAINSRC} ${CSRCS})
+#======================================
+# THERMOSTAT APPLICATION (LVGL + EEZ + Modbus)
+#======================================
 
-target_link_libraries(${PROJECT_NAME}
+# Sources thermostat (C++ main + C++ class + C bridge + C UI)
+file(GLOB THERMOSTAT_MAIN "${CMAKE_SOURCE_DIR}/main.cpp")
+file(GLOB THERMOSTAT_CPP_SRCS 
+    "${CMAKE_SOURCE_DIR}/source/thermostat_app/*.cpp")
+file(GLOB_RECURSE THERMOSTAT_C_SRCS 
+    "${CMAKE_SOURCE_DIR}/source/thermostat_ui/*.c" 
+    "${CMAKE_SOURCE_DIR}/source/thermostat_ui/ui/*.c")
+
+add_executable(thermostat_demo ${THERMOSTAT_MAIN} ${THERMOSTAT_CPP_SRCS} ${THERMOSTAT_C_SRCS})
+
+target_link_libraries(thermostat_demo
     PRIVATE lvgl::drivers
     pthread
     m
 )
 
-install(TARGETS 86UI_demo DESTINATION bin)
+# Ajouter libmodbus au thermostat (toujours)
+target_include_directories(thermostat_demo PRIVATE ${LIBMODBUS_DIR}/include)
+target_link_libraries(thermostat_demo PRIVATE ${LIBMODBUS_DIR}/lib/libmodbus.a)
+message(STATUS "Thermostat: avec libmodbus")
+
+
+#======================================
+# INSTALLATION
+#======================================
+
+install(TARGETS thermostat_demo
+        DESTINATION bin)
