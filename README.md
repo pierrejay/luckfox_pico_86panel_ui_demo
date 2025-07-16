@@ -177,12 +177,6 @@ main.cpp                  # Active C++ application entry point
 main.c.old                # Reference C entry point (ping_demo example, NOT built)
 ```
 
-**Benefits of This Organization:**
-- **Clear separation:** Generated code vs. your implementation
-- **Easy navigation:** All business logic in one directory
-- **Extensible:** Add new C++ classes to `source/thermostat_app/` as needed
-- **Version control friendly:** Can exclude generated files from commits
-
 #### Building the Central Thermostat Controller
 
 **Design Philosophy:** The main Thermostat class serves as the central coordinator, orchestrating all hardware components and business logic. We deliberately choose a comprehensive getter/setter API design that will make the C++ to C bridge simple and predictable.
@@ -437,12 +431,6 @@ void Thermostat::sensorTask() {
 
 **source/thermostat_app/thermostat_bridge.cpp** - Clean C interface bridging EEZ Studio UI with C++ application:
 
-**Bridge Architecture Design:**
-- **Single instance management:** C++ instance handled internally, no instance parameters from UI layer
-- **Type conversion:** Handles C `int` ↔ C++ `bool` conversions for EEZ compatibility  
-- **Error safety:** Null-safe operations prevent crashes if C++ instance unavailable
-- **Thread-safe access:** All calls route through thread-safe C++ methods
-- **Simplified API:** Clean, predictable function names that mirror the C++ interface
 ```cpp
 extern "C" {
     // Temperature display
@@ -598,26 +586,6 @@ CMake orchestrates:
 - **LVGL Integration:** UI framework compiled directly into application
 - **Single Binary:** Everything linked into one self-contained ARM executable
 
-#### Key Differences from Basic Luckfox Approach
-
-**Basic Luckfox (simple):**
-```
-main.c + LVGL sources → Direct compilation → Simple executable
-```
-
-**Our Approach (structured):**
-```
-External deps → Our C++ classes → UI integration → Feature-rich executable
-    ↓              ↓                 ↓
-libmodbus → Thermostat.cpp → EEZ Studio UI → Complete thermostat system
-```
-
-**Benefits of Our Approach:**
-- **Modularity:** Clear separation between business logic, UI, and external libraries
-- **Maintainability:** C++ classes encapsulate complexity
-- **Extensibility:** Easy to add new sensors, control algorithms, or UI features
-- **Industrial-grade:** Proper error handling, threading, and resource management
-
 ### Cross-Compilation Strategy and Process
 
 **Two-Step Build Process:** Building for the Panel 86 requires a specific sequence:
@@ -670,13 +638,6 @@ The build system automatically discovers our source files and combines them with
 
 **The cleanbuild.sh Philosophy:** Rather than remembering complex cmake commands and dependency checks, we automate the entire build process in a single script. This eliminates build environment inconsistencies and makes the project accessible to team members.
 
-**What cleanbuild.sh Accomplishes:**
-- **Environment validation:** Checks that all required paths and dependencies are available
-- **Clean builds:** Removes previous artifacts to prevent linking conflicts  
-- **Parallel compilation:** Uses all CPU cores for faster builds
-- **Build verification:** Confirms the output binary is actually ARM architecture
-- **Error handling:** Fails fast with clear messages when something goes wrong
-
 ```bash
 #!/bin/bash
 set -e  # Exit immediately if any command fails
@@ -717,12 +678,6 @@ ls -lh thermostat_demo
 
 echo "Ready for deployment to Panel 86"
 ```
-
-**Script Benefits for Development:**
-- **Consistent builds:** Same process every time, regardless of developer environment
-- **Fast iteration:** Single command rebuilds everything cleanly
-- **Error prevention:** Catches common setup mistakes before they cause build failures
-- **Team onboarding:** New developers can build without memorizing commands
 
 #### Dependency Management
 **libmodbus Cross-Compilation - Critical Setup Step:**
@@ -771,7 +726,7 @@ The Panel 86 runs a minimal, purpose-built Linux distribution optimized for indu
 - **Shell:** Ash shell (lightweight bash alternative, some syntax differences)
 - **Networking:** Built-in Ethernet (static/DHCP) and WiFi capability
 - **Storage:** 8GB eMMC with ext4 filesystem (~6GB user space available)
-- **Memory:** 512MB DDR3 RAM (shared with GPU, ~400MB available for applications)
+- **Memory:** 256MB DDR3 RAM (shared with GPU, ~200MB available for applications)
 - **Display:** 720x720 IPS touchscreen with capacitive touch controller
 
 #### Deployment Process
@@ -799,31 +754,12 @@ ssh root@192.168.1.100 "/usr/bin/thermostat_demo"
 - **SSH access configured:** For deployment and remote debugging
 
 **Resource Usage and Performance:**
-- **Display resolution:** 720×720 pixels (square format) with 16-bit color depth
 - **Flash storage:** ~700KB executable (single self-contained binary, no separate UI assets)
 - **RAM footprint:** ~12MB total (measured: 2×6MB processes, ~4MB shared libraries)
 - **CPU utilization:** <2% average on 1GHz Cortex-A7 (spikes to ~6% during UI transitions)
-
-**Real-time Performance:**
 - **UI refresh rate:** 60 FPS maintained for smooth touch interaction
-- **Sensor polling:** 2-second interval (appropriate for thermal processes)
 - **Regulation response:** <10ms from setpoint change to valve action
 - **Boot time:** ~10 seconds from power-on to application ready (stock Luckfox Buildroot image)
-
-### Production Considerations
-
-#### System Integration
-The application integrates with the Panel 86's Linux environment:
-- **Systemd service:** Can be configured as system service for automatic startup
-- **Logging:** Uses standard console output, redirectable to syslog
-- **Configuration:** Runtime parameters via command line or config files
-- **Updates:** Standard Linux package management or file replacement
-
-#### Performance Optimization
-- **Memory management:** RAII prevents leaks in long-running operation
-- **Thread efficiency:** Minimal thread count reduces context switching
-- **I/O optimization:** Async callbacks prevent UI blocking
-- **Error recovery:** Automatic retry mechanisms maintain robustness
 
 ---
 
