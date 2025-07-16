@@ -191,7 +191,7 @@ void ui_event_ButtonConnect(lv_event_t * e)
     {
         const char *ssid = lv_textarea_get_text(ui_TextAreaSSID);
         const char *passwd = lv_textarea_get_text(ui_TextAreaPW);
-        if (strlen(ssid) != 0 && strlen(passwd) != 0) {
+        if (strlen(ssid) > 0 && strlen(passwd) >= 8 && strlen(passwd) < 64) {
             wifi_connect_info_t *wifi = malloc(sizeof(wifi_connect_info_t));
             strcpy(wifi->ssid, ssid);
             strcpy(wifi->passwd, passwd);
