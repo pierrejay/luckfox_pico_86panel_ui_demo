@@ -552,8 +552,6 @@ int main(int argc, char **argv) {
 2. **Our application** - C++ code with LVGL integration using CMake
 3. **Cross-compilation** - Everything must target Rockchip ARM architecture
 
-**Key Difference from Basic Luckfox Examples:** The original Luckfox examples compile everything with a simple Makefile. Our approach adds C++ classes, external libraries, and modern build practices using CMake.
-
 #### Build System Components
 
 **1. Makefile_libmodbus (Dependency Management)**
