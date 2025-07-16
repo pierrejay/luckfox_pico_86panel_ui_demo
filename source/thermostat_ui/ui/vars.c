@@ -155,35 +155,6 @@ void set_var_threshold(float value) {
     printf("[UI] set_var_threshold(%.1f) - threshold constant in C++\n", (double)value);
 }
 
-// ===== LEGACY COMPATIBILITY FUNCTIONS =====
-// These functions were used in the old system.
-// Now they only delegate to the thermostat API.
-// NOTE: In the new architecture, the UI no longer needs to call these functions
-// because it accesses the EEZ getters directly above.
-
-void update_temperature_value(float temp) {
-    // DEPRECATED - The UI should no longer call this function
-    // The values are now updated by the application's sensor thread
-    printf("[UI] DEPRECATED: update_temperature_value(%.1f) called (ignored)\n", (double)temp);
-}
-
-void update_humidity_value(float humidity) {
-    // DEPRECATED - The UI should no longer call this function
-    printf("[UI] DEPRECATED: update_humidity_value(%.1f) called (ignored)\n", (double)humidity);
-}
-
-void update_setpoint_value(float setpoint) {
-    // DEPRECATED - Use set_var_setpoint() instead
-    printf("[UI] DEPRECATED: update_setpoint_value(%.1f) -> redirection vers set_var_setpoint\n", (double)setpoint);
-    set_var_setpoint(setpoint);
-}
-
-void set_sensor_error(void) {
-    // DEPRECATED - Sensor errors are now handled by the application
-    // The placeholders "?°C" are generated automatically in the _fmt getters
-    printf("[UI] DEPRECATED: set_sensor_error() called (ignored - automatic handling)\n");
-}
-
 // Getters for numeric values (for compatibility)
 float get_temperature_value(void) {
     return thermostat_get_temperature();

@@ -1,12 +1,13 @@
-// ping_handler.c - corriger les includes
+/* @file ping_handler.c */
+
 #include <pthread.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include "eez_ui/actions.h"  // ← eez_ui/ au lieu de ui/
-#include "eez_ui/vars.h"     // ← eez_ui/ au lieu de ui/
+#include "eez_ui/actions.h"
+#include "eez_ui/vars.h"
 
 static pthread_t ping_thread;
 static bool ping_running = false;
@@ -54,10 +55,10 @@ void ping_start_async(const char* target) {
 void action_ping_google(lv_event_t * e) {
     printf("Ping button clicked!\n");
     
-    // Mettre à jour les variables formatées
+    // Update UI variables
     set_var_ping_status_formatted("Status: Pinging...");
     set_var_ping_time_formatted("Last: ... ms");
-    set_var_is_idle(false);    // Spinner visible
+    set_var_is_idle(false);    // Visible spinner
     
     ping_start_async("8.8.8.8");
 }
@@ -65,12 +66,12 @@ void action_ping_google(lv_event_t * e) {
 void ping_completed(int time_ms, bool success) {
     printf("Ping completed: %s, time: %dms\n", success ? "SUCCESS" : "FAILED", time_ms);
     
-    // Mettre à jour les variables originales
+    // Update variables
     if (success) {
         set_var_ping_status("Success");
         set_var_ping_time(time_ms);
-        
-        // Mettre à jour les variables formatées
+
+        // Update UI variables with formatted strings
         set_var_ping_status_formatted("Status: Success");
         
         char time_formatted[64];
@@ -80,10 +81,10 @@ void ping_completed(int time_ms, bool success) {
         set_var_ping_status("Failed");
         set_var_ping_time(0);
         
-        // Mettre à jour les variables formatées
+        // Update UI variables with formatted strings
         set_var_ping_status_formatted("Status: Failed");
         set_var_ping_time_formatted("Last: Failed");
     }
     
-    set_var_is_idle(true);     // Spinner caché
+    set_var_is_idle(true); // Hidden spinner
 }

@@ -149,7 +149,7 @@ The interface features:
 
 #### Project Organization and Directory Structure
 
-**Organized Codebase:** All C++ business logic is organized in the `source/thermostat_app/` directory, separating the application code from LVGL framework files, build artifacts, and UI-generated content. This creates a clean distinction between what you write and what's generated or provided by third parties.
+All C++ business logic is organized in the `source/thermostat_app/` directory, separating the application code from LVGL framework files, build artifacts, and UI-generated content. 
 
 ```
 source/
@@ -634,9 +634,7 @@ The build system automatically discovers our source files and combines them with
 
 ### Build Process
 
-#### Automated Build Script - Development Workflow Optimization
-
-**The cleanbuild.sh Philosophy:** Rather than remembering complex cmake commands and dependency checks, we automate the entire build process in a single script. This eliminates build environment inconsistencies and makes the project accessible to team members.
+#### Build script (`cleanbuild` shell script)
 
 ```bash
 #!/bin/bash
@@ -717,11 +715,10 @@ file lib/libmodbus_arm/lib/libmodbus.a
 ### Deployment and Execution
 
 #### Target Environment
-**Panel 86 embedded Linux system characteristics:**
 
 The Panel 86 runs a minimal, purpose-built Linux distribution optimized for industrial applications:
 
-- **Kernel:** Custom Linux 4.19.x with Rockchip RV1106 hardware support and real-time patches
+- **Kernel:** Custom Linux 5.10 with Rockchip RV1106 hardware support and real-time patches
 - **Init system:** BusyBox-based lightweight initialization (not systemd)
 - **Shell:** Ash shell (lightweight bash alternative, some syntax differences)
 - **Networking:** Built-in Ethernet (static/DHCP) and WiFi capability
@@ -745,7 +742,6 @@ ssh root@192.168.1.100 "/usr/bin/thermostat_demo"
 ```
 
 #### Runtime Environment
-**System Requirements for Successful Operation:**
 
 **Critical Requirements:**
 - **Root privileges mandatory:** GPIO sysfs access requires root permissions

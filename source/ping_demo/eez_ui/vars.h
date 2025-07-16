@@ -29,7 +29,7 @@ extern void set_var_ping_time(int32_t value);
 extern bool get_var_is_idle();
 extern void set_var_is_idle(bool value);
 
-// vars.h - ajouter après les autres déclarations
+// vars.h - Declarations for formatted variables
 extern const char *get_var_ping_status_formatted();
 extern void set_var_ping_status_formatted(const char *value);
 extern const char *get_var_ping_time_formatted();
