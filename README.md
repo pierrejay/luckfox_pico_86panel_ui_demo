@@ -63,7 +63,7 @@ Starting with the basic Luckfox C example (main.c + LVGL), we first demonstrate 
 
 The UI is composed of a button that triggers a `ping 8.8.8.8` request, a spinner rotating during a request is in flight, and metrics that display the status & latency of last ping request.
 
-<img width="539" height="538" alt="Capture d’écran 2025-07-16 à 18 14 27" src="https://github.com/user-attachments/assets/8cc7c41a-6b67-426c-a581-c6a411ef3850" />
+<img width="539" height="538" alt="467120243-8cc7c41a-6b67-426c-a581-c6a411ef3850" src="https://github.com/user-attachments/assets/38136685-a327-4f2e-82fb-0b4b9771163b" />
 
 **Reference Implementation:** The repository includes a `main-ping_demo.c.old` file that shows this basic integration using the `ping_demo` example. This file demonstrates the original Luckfox Panel 86 demo structure adapted for EEZ Studio UI, but **it's not active in the build** - it's preserved for educational reference only.
 
@@ -125,7 +125,7 @@ This pattern scales to any application complexity while maintaining clean separa
 - Display temperature/humidity from Modbus RTU sensor
 - User-adjustable temperature setpoint via touchscreen
 - Automatic regulation with manual override capability
-- Valve control via GPIO relays (3-point zone valve)
+- Valve control via GPIO relays (3-point zone valve, two opposed `OPEN`/`CLOSE` contacts)
 - Visual status indicators (sensor health, regulation state)
 
 **Technical Requirements:**
@@ -135,14 +135,15 @@ This pattern scales to any application complexity while maintaining clean separa
 - Modbus RTU communication over RS485
 
 ### UI Design and Layout
-<img width="539" alt="Capture d’écran 2025-07-04 à 22 31 25" src="https://github.com/user-attachments/assets/5bb0a6cf-5c69-485a-8de9-4a53c0c36715" />
+
+<img width="539" height="538" alt="462633738-5bb0a6cf-5c69-485a-8de9-4a53c0c36715" src="https://github.com/user-attachments/assets/e048321b-1a07-4b22-9620-068084e77d4a" />
 
 The interface features:
-- Large temperature display with humidity reading
-- Circular setpoint adjustment control
-- Toggle switches for regulation enable/disable
-- Manual valve control buttons
-- Status LEDs for system health indication
+- Large temperature display with temperature & humidity reading
+- Circular setpoint control & +/- 0.5°C adjustment buttons
+- Toggle switch for regulation enable/disable
+- Manual valve control switches
+- Status LEDs for sensor health indication (blinking green, steady red)
 
 ### C++ Class Architecture Design
 
