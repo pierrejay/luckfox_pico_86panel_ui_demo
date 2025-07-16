@@ -661,6 +661,8 @@ The Luckfox SDK provides a complete cross-compilation toolchain specifically tun
 
 The build system automatically discovers our source files and combines them with the existing LVGL framework to create the final `thermostat_demo` executable.
 
+**Note:** For a larger application, we could have created a dedicated CMakeLists.txt for the thermostat module with proper `add_subdirectory()` organization. For this POC, integrating directly into the main build file keeps the structure simple and maintainable.
+
 ### Build Process
 
 #### Automated Build Script - Development Workflow Optimization
